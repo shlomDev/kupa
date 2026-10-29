@@ -1,9 +1,8 @@
 // Product images are matched by barcode; chain prices remain untouched.
-const imageRequests=new Map();
+const imageRequests=new Map(),imageCache=new Map();
 async function lookupProductImage(barcode){
  if(!/^\d{8,14}$/.test(barcode))return response('{"error":"Invalid barcode"}',400);
- const key=new Request('https://metadata.local/v3/'+barcode);
- if(globalThis.caches){const cached=await caches.default.match(key);if(cached)return cached;}
+ const cached=imageCache.get(barcode);if(cached&&Date.now()<cached.until)return cached.response.clone();
  if(imageRequests.has(barcode))return (await imageRequests.get(barcode)).clone();
  const pending=(async()=>{
   let reached=false,result={barcode,image:'',category:'',source:'',version:3};
@@ -16,5 +15,5 @@ async function lookupProductImage(barcode){
   if(!reached)return response('{"error":"Photo sources unavailable"}',503);
   const out=response(JSON.stringify(result));out.headers.set('Cache-Control',result.image?'public,max-age=604800':'public,max-age=3600');return out;
  })();imageRequests.set(barcode,pending);
- try{const out=await pending;if(globalThis.caches&&out.ok)await caches.default.put(key,out.clone());return out.clone();}finally{imageRequests.delete(barcode);}
+ try{const out=await pending;if(out.ok){const data=await out.clone().json();if(imageCache.size>=2000)imageCache.delete(imageCache.keys().next().value);imageCache.set(barcode,{until:Date.now()+(data.image?604800000:3600000),response:out.clone()});}return out.clone();}finally{imageRequests.delete(barcode);}
 }
