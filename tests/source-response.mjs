@@ -9,6 +9,6 @@ try{
  const valid=await app.fetch(req(),{},{});assert.equal(valid.status,200);assert((await valid.text()).includes('catalog'));
  globalThis.fetch=async()=>new Response('<html>Unexpected response</html>',{headers:{'Content-Type':'text/html'}});
  assert.equal((await app.fetch(req(),{},{})).status,502);
- const page=await (await app.fetch(new Request('https://app.test/'),{},{})).text();new Function(page.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1]);assert(!page.includes('(login OK)'));assert(page.includes('Import PriceFull / PromoFull'));assert(page.includes('SuperPharm requires verification')); 
+ const page=await (await app.fetch(new Request('https://app.test/'),{},{})).text();new Function(page.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1]);assert(!page.includes('(login OK)'));assert(!page.includes('id="importBtn"'));assert(page.includes('source_verification_required'));assert(page.includes('loadCatalog'));  
  console.log('Challenge rejection, valid index passthrough, malformed index rejection, recovery UI and JS syntax passed.');
 }finally{globalThis.fetch=realFetch}
