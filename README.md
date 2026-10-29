@@ -4,7 +4,7 @@ Hebrew-first grocery browser with English and light/dark toggles.
 
 Choose a store → enter a city or discover it from browser location → choose a branch. Only branches in that city are returned. Selecting a branch automatically fetches its product prices; the On sale tab fetches promotions for the same branch. There are no file imports, pasted JSON, source logs, Telegram credentials or technical setup in the shopping UI.
 
-Products and offers support category sections, category/search/sort filters, favorites, grid cards and compact list views. Titles, brands, package quantities and unit prices use published fields. Categories inferred from titles are marked in product details. Photos load automatically using exact barcode matching; missing images and quantities are never fabricated. Promotion amounts preserve quantity and eligibility conditions and are not converted into assumed per-item prices.
+Products and offers support category sections, category/search/sort filters, favorites, grid cards and compact list views. Titles, brands, package quantities and unit prices use published fields. Categories inferred from titles are marked in product details. Photos load automatically using exact barcode matching from verified SuperPharm product photography, then Open Food Facts / Open Beauty Facts. Nested image fields in source JSON are preserved. Negative browser photo caches expire after one hour; missing images and quantities are never fabricated. Promotion amounts preserve quantity and eligibility conditions and are not converted into assumed per-item prices.
 
 ## Run locally
 
@@ -16,6 +16,7 @@ npm run dev -- --port 3000
 ```
 
 ```sh
+node tests/images.mjs
 node tests/catalog.mjs
 node tests/branches.mjs
 node tests/source-response.mjs
