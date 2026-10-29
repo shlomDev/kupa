@@ -3,7 +3,7 @@ let parser=fs.readFileSync('src/catalog.mjs','utf8').replace(/^export /gm,'');
 const html=fs.readFileSync('src/page.html','utf8').replace('/*CATALOG_PARSER*/',parser).replace('/*REFRESH_CONTROLLER*/',fs.readFileSync('src/refresh.mjs','utf8').replace(/^export /gm,''));
 let backend=fs.readFileSync('worker/backend.js','utf8');
 const feeds=fs.readFileSync('worker/feeds.mjs','utf8');
-const metadata="\n if(url.pathname==='/metadata')return lookupProductImage(url.searchParams.get('barcode')||'');\n";
+const metadata="\n if(url.pathname==='/metadata')return lookupProductImage(url.searchParams.get('barcode')||'',url.searchParams.get('lang')||'he',url.searchParams.get('name')||'');\n";
 backend=backend.replace(" if(url.pathname==='/ping')",metadata+" if(url.pathname==='/ping')");
 const bootstrap='const branchDirectory='+fs.readFileSync('data/branch-directory.json','utf8')+';\nconst cityDirectory='+fs.readFileSync('data/cities.json','utf8')+';\n'+feeds+'\n'+fs.readFileSync('worker/images.mjs','utf8')+'\n';
 const worker=bootstrap+'const page='+JSON.stringify(html)+';\nconst verified='+JSON.stringify(fs.readFileSync('data/verified.json','utf8'))+';\n'+backend;
