@@ -7,5 +7,5 @@ for(const [store,count,local] of [['RamiLevi',5,5],['osherad',1,1],['superpharm'
 }
 assert.equal((await call('/branches?store=wrong')).status,503);assert.equal((await call('/branches?store=superpharm&lat=bad&lng=34')).status,400);
 assert.equal((await(await call('/branches?store=RamiLevi&city=NoSuchCity')).json()).branches.length,0);
-const page=await(await call('/')).text();assert(page.includes('findLocation'));assert(page.includes('cardsView'));assert(page.includes('listView'));assert(!page.includes('id="importBtn"'));assert(!page.includes('id="catalogText"'));assert(!page.includes('Other branches'));assert(page.includes("if(branch)loadCatalog('price')"));
+const page=await(await call('/')).text();assert(page.includes('findLocation'));assert(page.includes('cardsView'));assert(page.includes('listView'));assert(!page.includes('id="importBtn"'));assert(!page.includes('id="catalogText"'));assert(!page.includes('Other branches'));assert(page.includes("if(branch)catalogRefresh.run(true)"));
 console.log('Strict city-only filtering, unknown-city empty results, automatic product loading, card/list views and shopper-only controls passed.');
