@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {nearestBranch} from '../src/location.mjs';
+assert.equal(nearestBranch([]),null);
+const rows=[{id:'unknown',sameCity:true,distance:null},{id:'far',sameCity:true,distance:4},{id:'near',sameCity:true,distance:1},{id:'othercity',sameCity:false,distance:0.1}];
+assert.equal(nearestBranch(rows).id,'near');assert.equal(rows[0].id,'unknown');
+assert.equal(nearestBranch([{id:'one',sameCity:true,distance:null}]).id,'one');
+assert.equal(nearestBranch([{id:'a',sameCity:true,distance:null},{id:'b',sameCity:true,distance:null}]),null);
+const fs=await import('node:fs');const page=fs.readFileSync('src/page.html','utf8');
+assert(page.includes('id="branchStep" hidden'));assert(page.includes('id="resultsScroll"'));assert(page.includes('autoSelect:true'));assert(page.includes('id===requestId||autoSelected'));assert(page.includes('body:not(.results-focused) .catalog{display:none}'));
+console.log('Nearest verified local branch, unknown distances, city boundary, progressive setup and locked viewport passed.');

@@ -16,6 +16,7 @@ npm run dev -- --port 3000
 ```
 
 ```sh
+node tests/location.mjs
 node tests/refresh.mjs
 node tests/images.mjs
 node tests/catalog.mjs
@@ -43,3 +44,5 @@ Missing photos also fall back to an official product-page lookup using the app l
 Pull-to-refresh / page reload restores this tab’s store, city, verified branch, price/promotion/favorites tab, search, category, sort, card/list mode and results focus. Fresh prices are fetched again; catalog data and precise GPS coordinates are not stored in the session snapshot. Categories are restored after the relevant feed loads. Changing language preserves sorting.
 
 Photo lookups receive the selected retailer. They first check that retailer’s product photography, catalog API or official product pages, then fall back to other verified barcode sources. Broken browser image URLs are excluded on retry and no longer remain cached as successful pictures. Short internal item codes are looked up only in their own retailer. Selected-store photography may remain unavailable when the retailer denies the connection or has no public product record; the app does not substitute unrelated products.
+
+Branch selection is progressively revealed after a city directory loads. Browser location discovers the city and auto-selects its closest located branch (or the only branch), retaining Change branch. If no distances can be verified for multiple branches, selection stays manual. Results mode hides all setup, branding and footer; the retailer, branch and filters are locked above an independent scrolling product pane. GPS coordinates remain session-only.

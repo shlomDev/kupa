@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 let parser=fs.readFileSync('src/catalog.mjs','utf8').replace(/^export /gm,'');
-const html=fs.readFileSync('src/page.html','utf8').replace('/*CATALOG_PARSER*/',parser).replace('/*REFRESH_CONTROLLER*/',fs.readFileSync('src/refresh.mjs','utf8').replace(/^export /gm,''));
+const locationLogic=fs.readFileSync('src/location.mjs','utf8').replace(/^export /gm,'');
+const html=fs.readFileSync('src/page.html','utf8').replace('/*CATALOG_PARSER*/',parser).replace('/*REFRESH_CONTROLLER*/',fs.readFileSync('src/refresh.mjs','utf8').replace(/^export /gm,'')).replace('/*LOCATION_LOGIC*/',locationLogic);
 let backend=fs.readFileSync('worker/backend.js','utf8');
 const feeds=fs.readFileSync('worker/feeds.mjs','utf8');
 const metadata="\n if(url.pathname==='/metadata')return lookupProductImage(url.searchParams.get('barcode')||'',url.searchParams.get('lang')||'he',url.searchParams.get('name')||'',url.searchParams.get('store')||'superpharm',url.searchParams.get('exclude')||'');\n";
