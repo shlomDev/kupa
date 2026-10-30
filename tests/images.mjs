@@ -17,6 +17,19 @@ try{
  const fallback=await(await app.fetch(new Request('https://test/metadata?barcode=33333333&lang=he'),{},{})).json();assert.equal(fallback.image,'https://shop.super-pharm.co.il/medias/matched.jpg');assert(requestedLanguage.startsWith('he')); 
  globalThis.fetch=async u=>String(u).includes('/search?')?new Response('<p class="description-ean">ברקוד מוצר: 99999999</p><meta property="og:image" content="https://shop.super-pharm.co.il/wrong.jpg"> Recommended: 44444444'):String(u).includes('blob.core')?new Response(null,{status:404}):new Response(JSON.stringify({status:0}));
  const unrelated=await(await app.fetch(new Request('https://test/metadata?barcode=44444444&lang=en'),{},{})).json();assert.equal(unrelated.image,'');
+ calls=[];globalThis.fetch=async(u,o)=>{calls.push(String(u));return new Response(null,{headers:{'Content-Type':'image/jpeg','Content-Length':'6000'}})};
+ const rami=await(await app.fetch(new Request('https://test/metadata?barcode=55555555&store=RamiLevi'),{},{})).json();assert(rami.image.startsWith('https://img.rami-levy.co.il/'));assert(calls[0].includes('img.rami-levy.co.il'));assert.equal(rami.store,'RamiLevi');
+ calls=[];const sp=await(await app.fetch(new Request('https://test/metadata?barcode=55555555&store=superpharm'),{},{})).json();assert(sp.image.includes('superpharmstorage'));assert(calls[0].includes('superpharmstorage'));
+ globalThis.fetch=async(u,o)=>{u=String(u);if(u.includes('osherad.co.il/?s='))return new Response('<script type="application/ld+json">'+JSON.stringify({'@type':'Product',gtin13:'66666666',image:'https://osherad.co.il/wp-content/uploads/exact-product.jpg'})+'</script>');return new Response(null,{headers:{'Content-Type':'image/jpeg','Content-Length':'6000'}})};
+ const osher=await(await app.fetch(new Request('https://test/metadata?barcode=66666666&store=osherad'),{},{})).json();assert.equal(osher.image,'https://osherad.co.il/wp-content/uploads/exact-product.jpg');assert.equal(osher.source,'Osher Ad product page');
+ globalThis.fetch=async(u,o)=>{u=String(u);if(u.endsWith('/large.jpg'))return new Response(null,{status:404});if(u.includes('/api/catalog'))return new Response(JSON.stringify({data:[{barcode:'77777777',images:{small:'/product/77777777/small.jpg'}}]}));return new Response(null,{headers:{'Content-Type':'image/jpeg','Content-Length':'6000'}})};
+ const api=await(await app.fetch(new Request('https://test/metadata?barcode=77777777&store=RamiLevi'),{},{})).json();assert.equal(api.image,'https://img.rami-levy.co.il/product/77777777/small.jpg');
+ globalThis.fetch=async(u,o)=>new Response(null,{headers:{'Content-Type':'image/jpeg','Content-Length':'6000'}});
+ const excluded=encodeURIComponent('https://img.rami-levy.co.il/product/88888888/large.jpg');
+ const replacement=await(await app.fetch(new Request('https://test/metadata?barcode=88888888&store=RamiLevi&exclude='+excluded),{},{})).json();assert.notEqual(replacement.image,decodeURIComponent(excluded));assert(replacement.image.includes('superpharmstorage'));
+ assert.equal((await app.fetch(new Request('https://test/metadata?barcode=55555555&store=invalid'),{},{})).status,400);
+ calls=[];globalThis.fetch=async u=>{calls.push(String(u));return new Response('<html>No matching product</html>')};
+ const internal=await(await app.fetch(new Request('https://test/metadata?barcode=1234&store=osherad'),{},{})).json();assert.equal(internal.image,'');assert(calls.every(u=>new URL(u).hostname==='osherad.co.il'));
  assert.equal((await app.fetch(new Request('https://test/metadata?barcode=bad'),{},{})).status,400);
 }finally{globalThis.fetch=original;delete globalThis.caches}
-console.log('Nested catalog images, safe URLs, verified barcode CDN images, placeholder rejection and wrong barcode rejection passed.');
+console.log('Nested catalog images, safe URLs, verified barcode CDN images, placeholder rejection and wrong barcode rejection, selected-store priority, retailer cache isolation, official API/page extraction and failed-URL exclusion passed.');
