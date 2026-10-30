@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const code=fs.readFileSync('worker/feeds.mjs','utf8');const c=vm.createContext({URL,URLSearchParams,Response,Uint8Array,AbortSignal,Map,Date,Number,Error,branchDirectory:JSON.parse(fs.readFileSync('data/branch-directory.json','utf8'))});vm.runInContext(code,c);
+const row=(name,path='/Download/'+name)=>'<tr><td>1</td><td>'+name+'</td><td>date</td><td>type</td><td>branch</td><td><a href="'+path+'?bucketName=sp_transparency_output_prod_v2">download</a></td></tr>';
+const newest='PriceFull7290172900007-000-191-20261030-070457.gz';const old='PriceFull7290172900007-000-191-20261029-070457.gz';
+const html=row(old)+row(newest)+row('PriceFull7290172900007-000-192-20261030-070457.gz')+row('PromoFull7290172900007-000-191-20261030-070457.gz')+row(newest,'https://evil.example/Download/'+newest);
+c.html=html;assert.equal(vm.runInContext("superpharmFiles(html,'191','PriceFull',SP_SERVICE).length",c),2);assert.equal(vm.runInContext("superpharmFiles(html,'191','PriceFull',SP_SERVICE)[0].filename",c),newest);
+let requests=[];c.fetch=async u=>{requests.push(u);return new Response(u.includes('/Download/')?new Uint8Array([31,139,8]):html)};
+const r=await vm.runInContext("superpharmCatalog('191','PriceFull')",c);assert.equal(r.headers.get('X-Catalog-Filename'),newest);assert(requests.every(x=>new URL(x).hostname==='pricetrans-prod-879206258045.me-west1.run.app'));
+c.fetch=async u=>new Response(u.includes('/Download/')?'bad':html);await assert.rejects(vm.runInContext("superpharmCatalog('191','PriceFull')",c),/invalid catalog/);
+console.log('SuperPharm latest full file selection, branch/type/chain isolation, download allowlist and gzip validation passed.');
