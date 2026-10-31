@@ -26,10 +26,13 @@ try{
  const api=await(await app.fetch(new Request('https://test/metadata?barcode=77777777&store=RamiLevi'),{},{})).json();assert.equal(api.image,'https://img.rami-levy.co.il/product/77777777/small.jpg');
  globalThis.fetch=async(u,o)=>new Response(null,{headers:{'Content-Type':'image/jpeg','Content-Length':'6000'}});
  const excluded=encodeURIComponent('https://img.rami-levy.co.il/product/88888888/large.jpg');
- const replacement=await(await app.fetch(new Request('https://test/metadata?barcode=88888888&store=RamiLevi&exclude='+excluded),{},{})).json();assert.notEqual(replacement.image,decodeURIComponent(excluded));assert(replacement.image.includes('superpharmstorage'));
+ const replacement=await(await app.fetch(new Request('https://test/metadata?barcode=88888888&store=RamiLevi&exclude='+excluded),{},{})).json();assert.notEqual(replacement.image,decodeURIComponent(excluded));assert(replacement.image.endsWith('/88888888/small.jpg'));
  assert.equal((await app.fetch(new Request('https://test/metadata?barcode=55555555&store=invalid'),{},{})).status,400);
  calls=[];globalThis.fetch=async u=>{calls.push(String(u));return new Response('<html>No matching product</html>')};
  const internal=await(await app.fetch(new Request('https://test/metadata?barcode=1234&store=osherad'),{},{})).json();assert.equal(internal.image,'');assert(calls.every(u=>new URL(u).hostname==='osherad.co.il'));
+ // A search page can hold nested Product records, or link to an exact-barcode product page.
+ globalThis.fetch=async(u,o)=>{u=String(u);if(u.includes('blob.core'))return new Response(null,{status:404});if(u.includes('/search?'))return new Response('<a href="/care/p/known-product">Product</a>');if(u.includes('/care/p/known-product'))return new Response('<script type="application/ld+json">'+JSON.stringify({'@type':'ItemList',itemListElement:[{item:{'@type':'Product',gtin13:'22222222',image:'https://shop.super-pharm.co.il/medias/nested.jpg'}}]})+'</script>');if(u.includes('/medias/nested.jpg'))return o.method==='HEAD'?new Response(null,{status:405}):new Response(new Uint8Array(1000),{status:206,headers:{'Content-Type':'image/jpeg'}});return new Response(JSON.stringify({status:0}));};
+ const nested=await(await app.fetch(new Request('https://test/metadata?barcode=22222222&store=superpharm'),{},{})).json();assert.equal(nested.image,'https://shop.super-pharm.co.il/medias/nested.jpg');
  assert.equal((await app.fetch(new Request('https://test/metadata?barcode=bad'),{},{})).status,400);
 }finally{globalThis.fetch=original;delete globalThis.caches}
 console.log('Nested catalog images, safe URLs, verified barcode CDN images, placeholder rejection and wrong barcode rejection, selected-store priority, retailer cache isolation, official API/page extraction and failed-URL exclusion passed.');
