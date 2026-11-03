@@ -39,3 +39,17 @@ export function shopperProductInfo(p,language='he'){
  const amount=quantity!==null&&quantity>0?quantity.toLocaleString(he?'he-IL':'en-GB',{maximumFractionDigits:3}):'';
  return {manufacturer:knownBrand,contents:amount&&short?amount+' '+short:'',comparisonPrice:quantity>0&&factor&&Number.isFinite(p.price)?p.price/quantity*factor:null,comparisonBasis:basis};
 }
+
+export function readableCatalogDate(input,language='he'){
+ const text=String(input||'').trim();if(!text)return '';const locale=language==='en'?'en-GB':'he-IL';
+ const timeOnly=text.match(/^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/);if(timeOnly)return Number(timeOnly[1])<24&&Number(timeOnly[2])<60?timeOnly[1].padStart(2,'0')+':'+timeOnly[2]:'';
+ let normalized=text.replace(/^(\d{4})(\d{2})(\d{2})(?=T|$)/,'$1-$2-$3');
+ const local=normalized.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?$/);
+ const hasTime=/[T ]\d{2}:\d{2}/.test(normalized);let date,zone;
+ if(local){const [,y,m,d,h='0',min='0',sec='0']=local;date=new Date(Date.UTC(+y,+m-1,+d,+h,+min,+sec));if(date.getUTCFullYear()!==+y||date.getUTCMonth()!==+m-1||date.getUTCDate()!==+d||+h>23||+min>59||+sec>59)return '';zone='UTC';}
+ else if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/.test(normalized)){date=new Date(normalized);zone='Asia/Jerusalem';}
+ else return '';
+ if(!Number.isFinite(date.getTime()))return '';
+ const day=new Intl.DateTimeFormat(locale,{day:'numeric',month:'long',year:'numeric',timeZone:zone}).format(date);
+ if(!hasTime)return day;const clock=new Intl.DateTimeFormat(locale,{hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:zone}).format(date);return day+(language==='en'?' at ':' בשעה ')+clock;
+}

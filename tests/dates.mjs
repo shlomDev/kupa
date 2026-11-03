@@ -1,0 +1,7 @@
+import assert from 'node:assert/strict';import {readableCatalogDate as fmt} from '../src/catalog.mjs';
+assert.equal(fmt('2025-10-12T10:43:47.000','en'),'12 October 2025 at 10:43');
+assert.equal(fmt('20261030','en'),'30 October 2026');assert.equal(fmt('20261030T07:15:00','en'),'30 October 2026 at 07:15');
+assert.equal(fmt('2026-11-03T08:00:00Z','en'),'3 November 2026 at 10:00');
+assert(fmt('2025-10-12T10:43:47.000').includes('10:43'));assert(!fmt('2025-10-12T10:43:47.000').includes('.000'));
+assert.equal(fmt('2026-02-31'),'');assert.equal(fmt('not a date'),'');assert.equal(fmt(''), '');assert.equal(fmt('25:30'), '');assert.equal(fmt('09:30:47'),'09:30');
+console.log('Hebrew/English dates, milliseconds removal, source-local time preservation, Israel timezone conversion and invalid-date handling passed.');
