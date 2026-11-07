@@ -13,3 +13,5 @@ const priceCard=vm.runInContext('productCard(p)',c).innerHTML;
 assert(priceCard.includes('Price last fetched: '));assert(!priceCard.includes('2025'));assert(priceCard.includes('00:00'));
 c.offer={...offer,discountedPrice:15};assert(vm.runInContext('offerCard({...offer,product:p})',c).innerHTML.includes('00:05'));
 console.log('Cards show the successful price/offer fetch timestamp and hide old item-update dates.');
+
+assert(!normal.innerHTML.includes('Price per '));assert(!normal.innerHTML.includes('100 ml'));assert(normal.innerHTML.includes('Contents: 150 ml'));
