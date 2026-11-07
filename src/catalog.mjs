@@ -53,3 +53,9 @@ export function readableCatalogDate(input,language='he'){
  const day=new Intl.DateTimeFormat(locale,{day:'numeric',month:'long',year:'numeric',timeZone:zone}).format(date);
  if(!hasTime)return day;const clock=new Intl.DateTimeFormat(locale,{hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:zone}).format(date);return day+(language==='en'?' at ':' בשעה ')+clock;
 }
+
+export function catalogPublicationDate(filename,language='he'){
+ const stamp=fileInfo(filename).stamp;if(!stamp)return '';
+ const date=stamp.slice(0,4)+'-'+stamp.slice(4,6)+'-'+stamp.slice(6,8)+'T'+stamp.slice(8,10)+':'+stamp.slice(10,12)+(stamp.length>=14?':'+stamp.slice(12,14):'');
+ return readableCatalogDate(date,language);
+}
