@@ -8,3 +8,8 @@ assert(promo.innerHTML.includes('Regular price · see offer details'));assert(pr
 c.offer={...offer,discountedPrice:15};assert(vm.runInContext('offerCard({...offer,product:p})',c).innerHTML.includes('class="price">ILS 15'));
 assert(vm.runInContext('offerCard({...offer,product:undefined,discountedPrice:null})',c).innerHTML.includes('class="price">—'));
 console.log('Shared regular/promotion card structure, product titles, favorites, offer terms and honest price labels passed.');
+c.catalog.checkedAt={price:Date.parse('2026-11-07T22:00:00Z'),promo:Date.parse('2026-11-07T22:05:00Z')};c.p.updated='2025-03-03T19:36:00';
+const priceCard=vm.runInContext('productCard(p)',c).innerHTML;
+assert(priceCard.includes('Price last fetched: '));assert(!priceCard.includes('2025'));assert(priceCard.includes('00:00'));
+c.offer={...offer,discountedPrice:15};assert(vm.runInContext('offerCard({...offer,product:p})',c).innerHTML.includes('00:05'));
+console.log('Cards show the successful price/offer fetch timestamp and hide old item-update dates.');
