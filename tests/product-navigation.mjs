@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const page=fs.readFileSync('src/page.html','utf8');const product={barcode:'123',name:'Product'};const nodes={resultsScroll:{scrollTop:450},productDetailPage:{hidden:true,scrollTop:99},productDetailContent:{replaceChildren(...v){this.children=v}},backToResults:{focus(){this.focused=true}},detailLocation:{},catalogResults:{focus(){this.focused=true}}};const classes=new Set(),listeners={};let openDetails;
+const c=vm.createContext({$:id=>nodes[id],catalog:{products:[product],promotions:[]},productCard:()=>({querySelector:()=>openDetails={open:false}}),names:{test:['רשת','Store']},store:'test',lang:'he',branch:{name:'Branch'},tr:a=>a,document:{body:{classList:{add:x=>classes.add(x),remove:x=>classes.delete(x)}}},requestAnimationFrame:fn=>fn(),history:{state:null,pushState(s){this.state=s},back(){this.state=null;listeners.popstate({state:null})}},window:{addEventListener:(name,fn)=>listeners[name]=fn}});
+vm.runInContext(page.slice(page.indexOf('let detailSelection='),page.indexOf('function offerDetails')),c);c.product=product;
+vm.runInContext('openProduct(product)',c);assert.equal(nodes.productDetailPage.hidden,false);assert.equal(openDetails.open,true);assert(classes.has('viewing-product'));assert.equal(nodes.productDetailPage.scrollTop,0);
+nodes.resultsScroll.scrollTop=0;nodes.backToResults.onclick();assert.equal(nodes.productDetailPage.hidden,true);assert.equal(nodes.resultsScroll.scrollTop,450);assert(!classes.has('viewing-product'));assert(nodes.catalogResults.focused);
+vm.runInContext('openProduct(product)',c);listeners.popstate({state:null});assert.equal(nodes.productDetailPage.hidden,true);
+assert(!page.includes('id="columnsView"'));assert(page.includes("setProperty('--product-columns',2)"));
+console.log('Single product page opens details, restores result scroll on back, handles browser back and removes the column selector.');
