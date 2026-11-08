@@ -18,6 +18,7 @@ export default {async fetch(request,env,ctx){
   try{const store=url.searchParams.get('store'),id=url.searchParams.get('branch')||'',type=url.searchParams.get('type');if(!FEED_CHAINS[store])return response('{"error":"Unknown chain"}',400);return store==='superpharm'?await superpharmCatalog(id,type):await chainCatalog(store,id,type);
   }catch(e){return response(JSON.stringify({error:e.message,code:e.code||'catalog_unavailable'}),503);}
  }
+ if(url.pathname==='/photo')return serveProductPhoto(url.searchParams.get('url')||'');
  if(url.pathname==='/ping')return response('{"ok":true,"hosted":true}');
  if(url.pathname==='/verified-catalog')return response(verified);
  if(url.pathname==='/proxy'||url.pathname==='/geocode'){
