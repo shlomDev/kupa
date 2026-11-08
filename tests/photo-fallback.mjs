@@ -1,0 +1,7 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import app from '../worker/index.js';
+const page=fs.readFileSync('src/page.html','utf8'),bad=new Set(),metadata={};const c=vm.createContext({store:'osherad',metadata,photoKey:b=>'osherad:'+b,rejected:()=>bad});
+vm.runInContext(page.slice(page.indexOf('function photoCandidates('),page.indexOf('function imageMarkup(')),c);
+c.p={barcode:'7290008347211'};let photos=vm.runInContext('photoCandidates(p)',c);assert.equal(photos[0],'https://img.rami-levy.co.il/product/7290008347211/large.jpg');bad.add(photos[0]);assert(vm.runInContext('photoCandidates(p)',c)[0].endsWith('/small.jpg'));
+c.p.image='https://source.example/catalog.jpg';assert.equal(vm.runInContext('photoCandidates(p)',c)[0],c.p.image);c.p={barcode:'1234'};assert.equal(vm.runInContext('photoCandidates(p)',c).length,0);
+const original=globalThis.fetch;try{globalThis.fetch=async u=>String(u).endsWith('blocked.jpg')?new Response(null,{status:403}):new Response(new Uint8Array(300),{headers:{'Content-Type':'image/jpeg'}});const req=path=>new Request('https://test/photo?url='+encodeURIComponent('https://img.rami-levy.co.il/product/123/'+path));assert.equal((await app.fetch(req('blocked.jpg'),{},{})).status,404);assert.equal((await app.fetch(req('good.jpg'),{},{})).status,200);}finally{globalThis.fetch=original}
+console.log('Catalog image priority, immediate barcode photos, next-image fallback, internal-code safety, and isolated image failures passed.');
